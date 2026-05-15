@@ -1,0 +1,23 @@
+{
+  "name": "@4prop/mailer",
+  "version": "0.1.0",
+  "description": "Shared transactional-email primitives: SES transport, layout shell, advertiser branding, and verification template.",
+  "type": "module",
+  "main": "src/index.js",
+  "exports": {
+    ".": "./src/index.js",
+    "./mailer": "./src/mailer.js",
+    "./renderEmail": "./src/renderEmail.js",
+    "./branding": "./src/branding.js",
+    "./templates/verify": "./src/templates/verifyEmail.js",
+    "./sendVerificationEmail": "./src/sendVerificationEmail.js"
+  },
+  "peerDependencies": {
+    "aws-sdk": "^2.0.0",
+    "mssql": "^11.0.0"
+  },
+  "files": [
+    "src",
+    "README.md"
+  ]
+}
