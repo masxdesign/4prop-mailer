@@ -51,10 +51,9 @@ Use `MAIL_FORCE_SANDBOX=true` in dev to redirect every outbound mail to
 `SANDBOX_EMAILS` regardless of advertiser configuration. In production, leave
 the flag unset and rely on per-advertiser `sandbox` rows.
 
-AWS SES credentials resolve from env vars `AWS_SES_ACCESS_KEY_ID`,
-`AWS_SES_SECRET_ACCESS_KEY`, and `AWS_SES_REGION`. A hardcoded fallback exists
-for parity with the legacy bizchat configuration — new deployments should set
-the env vars explicitly.
+AWS SES credentials: set `AWS_SES_ACCESS_KEY_ID` and `AWS_SES_SECRET_ACCESS_KEY`
+(plus `AWS_SES_REGION`, default `eu-west-1`), or omit those keys and use the
+SDK default credential chain (IAM role, `~/.aws/credentials`, etc.).
 
 ## Verification URL host
 
