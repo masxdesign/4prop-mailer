@@ -2,6 +2,7 @@ import { getBranding } from "./branding.js"
 import { renderEmail } from "./renderEmail.js"
 import { sendEmail } from "./mailer.js"
 import { verifyEmail } from "./templates/verifyEmail.js"
+import { formatEmailLogRecipient, resolveSandboxMode } from "./sandboxDelivery.js"
 
 /**
  * Build a verification URL the user clicks. advertiserId is required — every
@@ -30,16 +31,13 @@ function buildVerifyUrl(branding, plainToken, advertiserId) {
  *   - POST /api/auth/register             (initial verification)
  *   - POST /api/auth/resend-verification  (manual resend)
  *
- * Branding is advertiser-scoped — advertiserId is required. Every verify
- * email is sent in the context of one advertiser and must land the user back
- * on that advertiser's surface.
- *
  * @param {object} opts
- * @param {object} opts.abasePool   mssql pool (or promise) — needed for branding lookup
+ * @param {object} opts.abasePool
  * @param {{ id: number|string, email: string, firstname?: string }} opts.user
- * @param {string} opts.plainToken  Plaintext verification token (NOT the hash)
- * @param {number} opts.advertiserId  Required. Advertiser whose branding should be used.
- * @param {number} [opts.expiresInH]  Display-only TTL hint, default 24
+ * @param {string} opts.plainToken
+ * @param {number} opts.advertiserId
+ * @param {number} [opts.expiresInH=24]
+ * @param {object} [opts.delivery]  Sandbox delivery policy — see sandboxDelivery.js
  */
 export async function sendVerificationEmail({
     abasePool,
@@ -47,6 +45,7 @@ export async function sendVerificationEmail({
     plainToken,
     advertiserId,
     expiresInH = 24,
+    delivery = {},
 }) {
     if (!user?.email) throw new Error("sendVerificationEmail: user.email is required")
     if (!plainToken)  throw new Error("sendVerificationEmail: plainToken is required")
@@ -65,24 +64,11 @@ export async function sendVerificationEmail({
         },
     })
 
-    // Sandbox mode is honored when any of these is true:
-    //   - the advertiser row has `sandbox = 1`
-    //   - MAIL_FORCE_SANDBOX env is truthy (global override for dev / staging)
-    //   - NODE_ENV is "development"
-    // When on, recipients are redirected to SANDBOX_EMAILS (see mailer.js).
-    const forceSandbox = isTruthyEnv(process.env.MAIL_FORCE_SANDBOX)
-    const sandbox = branding.sandbox || forceSandbox || process.env.NODE_ENV === "development"
-    const logTo = sandbox ? `SANDBOX(${process.env.SANDBOX_EMAILS ?? ""})` : user.email
-    console.log(`[verifyEmail] Sending to=${logTo} subject="${subject}" advertiserId=${advertiserId ?? "(none)"} branding.sandbox=${branding.sandbox} force=${forceSandbox}`)
+    const sandbox = resolveSandboxMode(branding)
+    const logTo = formatEmailLogRecipient({ intendedTo: user.email, sandbox, delivery })
+    console.log(`[verifyEmail] Sending to=${logTo} subject="${subject}" advertiserId=${advertiserId} branding.sandbox=${branding.sandbox}`)
 
-    const result = await sendEmail({ to: user.email, from, subject, html, text, sandbox })
+    const result = await sendEmail({ to: user.email, from, subject, html, text, sandbox, delivery })
     console.log(`[verifyEmail] SES accepted MessageId=${result?.MessageId}`)
     return result
-}
-
-// Treat "1", "true", "yes", "on" (case-insensitive) as truthy. Anything else
-// — including empty, "0", "false", undefined — is false.
-function isTruthyEnv(value) {
-    if (value == null) return false
-    return /^(1|true|yes|on)$/i.test(String(value).trim())
 }

@@ -1,4 +1,5 @@
 import AWS from "aws-sdk"
+import { resolveEmailRecipients } from "./sandboxDelivery.js"
 
 // AWS SES transport. Set AWS_SES_ACCESS_KEY_ID / AWS_SES_SECRET_ACCESS_KEY for
 // explicit keys, or rely on the default AWS SDK credential provider chain (IAM
@@ -12,32 +13,26 @@ if (process.env.AWS_SES_ACCESS_KEY_ID && process.env.AWS_SES_SECRET_ACCESS_KEY) 
 }
 const ses = new AWS.SES(sesConfig)
 
-function resolveSandboxAddresses() {
-    return (process.env.SANDBOX_EMAILS || "")
-        .split(",")
-        .map((s) => s.trim())
-        .filter(Boolean)
-}
-
 /**
  * Send a transactional email via SES.
- * When `sandbox` is true, recipients are replaced with SANDBOX_EMAILS
- * (comma-separated env var). Used to redirect outbound mail for advertisers
- * flagged with `sandbox = true` in a_magAdvertisers, or for dev environments.
+ *
+ * When `sandbox` is true, recipients are normally replaced with SANDBOX_EMAILS.
+ * Pass `delivery.deliverToIntended: true` to keep the real recipient, or
+ * `delivery.to` for an explicit override — policy belongs to the caller.
  *
  * @param {object} opts
- * @param {string|string[]} opts.to        Primary recipient(s)
- * @param {string}          opts.from      "Display Name <email@domain>" formatted
+ * @param {string|string[]} opts.to
+ * @param {string}          opts.from
  * @param {string}          opts.subject
  * @param {string}          opts.html
- * @param {string}          [opts.text]    Falls back to subject if omitted
- * @param {boolean}         [opts.sandbox] Redirect to SANDBOX_EMAILS if true
+ * @param {string}          [opts.text]
+ * @param {boolean}         [opts.sandbox]
+ * @param {object}          [opts.delivery]
+ * @param {boolean}         [opts.delivery.deliverToIntended]
+ * @param {string|string[]} [opts.delivery.to]
  */
-export async function sendEmail({ to, from, subject, html, text, sandbox = false }) {
-    const sandboxAddresses = sandbox ? resolveSandboxAddresses() : []
-    const toAddresses = sandboxAddresses.length > 0
-        ? sandboxAddresses
-        : Array.isArray(to) ? to : [to]
+export async function sendEmail({ to, from, subject, html, text, sandbox = false, delivery = {} }) {
+    const toAddresses = resolveEmailRecipients({ intendedTo: to, sandbox, delivery })
 
     const params = {
         Source: from,
@@ -55,3 +50,5 @@ export async function sendEmail({ to, from, subject, html, text, sandbox = false
     const result = await ses.sendEmail(params).promise()
     return result
 }
+
+export { resolveEmailRecipients } from "./sandboxDelivery.js"

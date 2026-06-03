@@ -7,10 +7,13 @@
   "exports": {
     ".": "./src/index.js",
     "./mailer": "./src/mailer.js",
+    "./sandboxDelivery": "./src/sandboxDelivery.js",
     "./renderEmail": "./src/renderEmail.js",
     "./branding": "./src/branding.js",
     "./templates/verify": "./src/templates/verifyEmail.js",
-    "./sendVerificationEmail": "./src/sendVerificationEmail.js"
+    "./templates/reset": "./src/templates/resetPassword.js",
+    "./sendVerificationEmail": "./src/sendVerificationEmail.js",
+    "./sendPasswordResetEmail": "./src/sendPasswordResetEmail.js"
   },
   "peerDependencies": {
     "aws-sdk": "^2.0.0",

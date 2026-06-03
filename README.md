@@ -12,7 +12,8 @@ logo, name and color theme.
 
 | Module | Purpose |
 | --- | --- |
-| `src/mailer.js` | `sendEmail({to, from, subject, html, text, sandbox})` — SES `sendEmail` wrapper with sandbox-redirect support |
+| `src/mailer.js` | `sendEmail({to, from, subject, html, text, sandbox, delivery})` — SES wrapper with sandbox-redirect support |
+| `src/sandboxDelivery.js` | `resolveSandboxMode`, `resolveEmailRecipients`, `formatEmailLogRecipient` — portable delivery policy primitives |
 | `src/renderEmail.js` | Wraps a template function in the branded layout shell + adds an optional tracking pixel |
 | `src/branding.js` | `getBranding(pool, advertiserId)` — fetches advertiser-scoped branding; falls back to `DEFAULT_BRANDING` |
 | `src/templates/verifyEmail.js` | Email-verification template (CTA button + paste-fallback) |
@@ -39,9 +40,31 @@ This keeps the package portable and avoids two-pool footguns.
 
 ## Sandbox / SES setup
 
-`sendEmail` honours a `sandbox` flag. When true, recipients are replaced with
-the comma-separated `SANDBOX_EMAILS` env var. The verify helper turns sandbox
-mode on when **any** of these is true:
+`sendEmail` honours a `sandbox` flag. When true, recipients are normally replaced with
+the comma-separated `SANDBOX_EMAILS` env var. Callers can override via `delivery`:
+
+| `delivery` field | Effect when sandbox is on |
+| --- | --- |
+| `{ deliverToIntended: true }` | Send to the real `to` address(es) |
+| `{ to: "a@b.com" }` | Send to explicit override address(es) |
+| `{}` (default) | Redirect to `SANDBOX_EMAILS` |
+
+Example — auth verify mail always reaches the account owner on a sandbox advertiser site:
+
+```js
+await sendVerificationEmail({
+  abasePool,
+  user,
+  plainToken,
+  advertiserId,
+  delivery: { deliverToIntended: true },
+})
+```
+
+Or wire `@4prop/oauth`'s `resolveAuthEmailDelivery` hook in the host app and pass
+the returned `delivery` through to the mailer send helpers.
+
+The verify helper turns sandbox mode on when **any** of these is true:
 
 - `a_magAdvertisers.sandbox = 1` for the resolved advertiser (per-tenant)
 - `MAIL_FORCE_SANDBOX` env var is truthy (`1`/`true`/`yes`/`on`) — **global override**, ideal for dev / staging

@@ -9,8 +9,16 @@
  *   import { verifyEmail }            from "@4prop/mailer/templates/verify"
  *   import { sendVerificationEmail }  from "@4prop/mailer/sendVerificationEmail"
  */
-export { sendEmail } from "./mailer.js"
+export { sendEmail, resolveEmailRecipients } from "./mailer.js"
 export { renderEmail } from "./renderEmail.js"
 export { getBranding, DEFAULT_BRANDING } from "./branding.js"
+export {
+    resolveSandboxMode,
+    resolveSandboxAddresses,
+    formatEmailLogRecipient,
+    isTruthyEnv,
+} from "./sandboxDelivery.js"
 export { verifyEmail } from "./templates/verifyEmail.js"
+export { resetPassword } from "./templates/resetPassword.js"
 export { sendVerificationEmail } from "./sendVerificationEmail.js"
+export { sendPasswordResetEmail } from "./sendPasswordResetEmail.js"
