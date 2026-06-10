@@ -4,13 +4,21 @@ import { sendEmail } from "./mailer.js"
 import { resetPassword } from "./templates/resetPassword.js"
 import { formatEmailLogRecipient, resolveSandboxMode } from "./sandboxDelivery.js"
 
-function buildResetUrl(branding, plainToken, advertiserId) {
+function buildResetUrl(branding, plainToken, advertiserId, returnTo) {
     if (advertiserId == null) {
         throw new Error("sendPasswordResetEmail: advertiserId is required")
     }
     const base = (branding.baseUrl || "").replace(/\/$/, "")
     const pathPrefix = branding.advertiserBranded ? "" : `/${advertiserId}`
-    return `${base}${pathPrefix}/auth/reset-password?token=${encodeURIComponent(plainToken)}`
+    let url = `${base}${pathPrefix}/auth/reset-password?token=${encodeURIComponent(plainToken)}`
+    // `returnTo` is the relative router path (path + search) the user was on when
+    // they requested the reset, so the reset page can send them back there after
+    // saving. Only same-origin RELATIVE paths are forwarded (see the route's own
+    // open-redirect guard); we pass it through verbatim, URL-encoded.
+    if (returnTo) {
+        url += `&returnTo=${encodeURIComponent(returnTo)}`
+    }
+    return url
 }
 
 /**
@@ -29,6 +37,7 @@ export async function sendPasswordResetEmail({
     user,
     plainToken,
     advertiserId,
+    returnTo = null,
     expiresInH = 1,
     delivery = {},
 }) {
@@ -37,7 +46,7 @@ export async function sendPasswordResetEmail({
     if (advertiserId == null) throw new Error("sendPasswordResetEmail: advertiserId is required")
 
     const branding = await getBranding(abasePool, advertiserId)
-    const resetUrl = buildResetUrl(branding, plainToken, advertiserId)
+    const resetUrl = buildResetUrl(branding, plainToken, advertiserId, returnTo)
 
     const { subject, html, text, from } = await renderEmail({
         branding,
