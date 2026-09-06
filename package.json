@@ -15,6 +15,9 @@
     "./sendVerificationEmail": "./src/sendVerificationEmail.js",
     "./sendPasswordResetEmail": "./src/sendPasswordResetEmail.js"
   },
+  "dependencies": {
+    "@4prop/brand-theme": "*"
+  },
   "peerDependencies": {
     "aws-sdk": "^2.0.0",
     "mssql": "^11.0.0"

@@ -1,6 +1,13 @@
+import { buildEmailPalette } from "@4prop/brand-theme/colors"
+
 // Email-safe hex palette per advertiser color_theme.
 // Hand-picked equivalents of the oklch values defined in the frontend
-// index.css `.accent-<name>` blocks. Email clients can't render oklch.
+// `.accent-<name>` blocks. Email clients can't render oklch.
+//
+// PRESETS ONLY. Custom colours are admin-created and cannot be listed here, so
+// they are derived from their stored base hex instead — see resolveBubblePalette.
+// These stay hand-picked rather than derived so existing branded emails do not
+// shift colour when the engine's ramp is tuned.
 const BUBBLE_PALETTES = {
     orange: { brand: "#ea580c", subtleBg: "#fff7ed", subtleText: "#9a3412", border: "#fed7aa" },
     blue:   { brand: "#1d4ed8", subtleBg: "#eff6ff", subtleText: "#1e3a8a", border: "#bfdbfe" },
@@ -14,22 +21,50 @@ const NEUTRAL_BUBBLE_PALETTE = {
     border:     "#e5e7eb",
 }
 
-function resolveBubblePalette(colorTheme) {
-    return BUBBLE_PALETTES[colorTheme] || NEUTRAL_BUBBLE_PALETTE
+/**
+ * Preset → its hand-picked palette. Custom theme → derived from `baseHex`.
+ * Anything else (no theme, or a custom theme whose row has gone) → neutral.
+ */
+function resolveBubblePalette(colorTheme, baseHex) {
+    if (BUBBLE_PALETTES[colorTheme]) return BUBBLE_PALETTES[colorTheme]
+    if (baseHex) return buildEmailPalette(baseHex) || NEUTRAL_BUBBLE_PALETTE
+    return NEUTRAL_BUBBLE_PALETTE
 }
 
-// Property-pub frontend origin. Used as the default verify-URL host when an
-// advertiser has no hostname / subdomain_slug of its own. Set per environment:
-//   - dev:    https://localhost:8083 (matches the property-pub container)
-//   - prod:   https://property.pub
+// The fallback web origin, used when an advertiser has no hostname or
+// subdomain_slug of its own.
+//
+// property.pub IS the default, and it must NOT be an advertiser's domain.
+// 4prop.com looks like a platform address but is advertiser #4's `hostname`
+// (a_magAdvertisers: company "4Prop", subdomain_slug "4prop"), so defaulting to
+// it would send every unbranded email to one advertiser's site — and, since the
+// path prefix carries a DIFFERENT advertiser's id, to a URL like
+// 4prop.com/5011/bookings that belongs to neither.
+//
+// Nothing sets PROPERTY_PUB_URL in either app today, so this literal is what
+// production uses. Override per environment if needed (e.g.
+// https://localhost:8083 to point dev mail at the local container).
 const PROPERTY_PUB_URL = (process.env.PROPERTY_PUB_URL || "https://property.pub").replace(/\/$/, "")
 
 export const DEFAULT_BRANDING = {
-    siteName:     "BizChat",
+    // The platform's own name, shown when no advertiser owns the email. Note
+    // this is deliberately NOT paired with 4prop.com: the NAME is the operator's
+    // brand, while the LINK must stay on property.pub, which belongs to no
+    // advertiser. Advertiser #4 happens to trade as "4Prop" too, but a real
+    // advertiser email carries its own branding and never reaches this default.
+    siteName:     "4prop",
     logoUrl:      null,
     primaryColor: "#0070f3",
+    // NOT @4prop.com, and not an oversight.
+    //
+    // Mail goes out through AWS SES, and 4prop.com's SPF record authorises
+    // GoDaddy (`include:secureserver.net -all`), not SES — a hard fail. Sending
+    // as @4prop.com before the domain is verified in SES and its DKIM records
+    // published would put every email in spam or have it rejected outright.
+    // bizchat.uk is the verified sending identity, so it stays until that work
+    // is done; MAIL_FROM_EMAIL then flips it with no code change.
     fromEmail:    process.env.MAIL_FROM_EMAIL || "donotreply@bizchat.uk",
-    fromName:     process.env.MAIL_FROM_NAME  || "BizChat",
+    fromName:     process.env.MAIL_FROM_NAME  || "4prop",
     // Generic web origin used by the email layout shell (logo links, footer)
     // when no advertiser-specific URL is available. NOT used directly for the
     // verify-URL — that's built per-call with the advertiser context too.
@@ -74,8 +109,10 @@ export async function getBranding(poolOrPromise, advertiserId) {
                     a.subdomain_slug  AS subdomainSlug,
                     a.logo_url        AS logoUrl,
                     a.color_theme     AS colorTheme,
+                    ct.base_hex       AS colorThemeHex,
                     a.sandbox         AS sandbox
                 FROM a_magAdvertisers a
+                LEFT JOIN a_magAdvertiserColorThemes ct ON ct.slug = a.color_theme
                 WHERE a.id = @advertiserId
             `)
 
@@ -113,7 +150,7 @@ export async function getBranding(poolOrPromise, advertiserId) {
             fromName:     row.siteName     || DEFAULT_BRANDING.fromName,
             baseUrl,
             advertiserBranded,
-            bubble:       resolveBubblePalette(row.colorTheme),
+            bubble:       resolveBubblePalette(row.colorTheme, row.colorThemeHex),
             sandbox:      !!row.sandbox,
         }
     } catch (err) {
