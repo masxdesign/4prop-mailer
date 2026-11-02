@@ -13,7 +13,7 @@
 export function verifyEmail({ branding, data }) {
     const { verifyUrl, firstname, expiresInH = 24 } = data
 
-    const greeting = firstname ? `Hi ${escHtml(firstname)},` : "Hi,"
+    const greeting = firstname ? `Hi ${escHtml(firstname)}` : "Hi"
     const subject = `Verify your email for ${branding.siteName}`
 
     const bodyHtml = `
@@ -22,8 +22,8 @@ export function verifyEmail({ branding, data }) {
 <p style="margin:0 0 12px;font-size:14px;color:#374151;">${greeting}</p>
 
 <p style="margin:0 0 16px;font-size:14px;color:#374151;line-height:1.5;">
-  Click the button below to confirm this email address. This helps us keep
-  your account secure and lets you send enquiries.
+  Please click the button below to verify your email address. This enables
+  you to access your searches, property preferences and messages.
 </p>
 
 <table width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:24px 0;">

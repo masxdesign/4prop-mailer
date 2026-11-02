@@ -13,7 +13,7 @@
 export function resetPassword({ branding, data }) {
     const { resetUrl, firstname, expiresInH = 1 } = data
 
-    const greeting = firstname ? `Hi ${escHtml(firstname)},` : "Hi,"
+    const greeting = firstname ? `Hi ${escHtml(firstname)}` : "Hi"
     const subject = `Reset your ${branding.siteName} password`
 
     const bodyHtml = `
