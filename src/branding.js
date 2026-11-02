@@ -160,6 +160,9 @@ export async function getBranding(poolOrPromise, advertiserId) {
         return {
             siteName:     row.siteName     || DEFAULT_BRANDING.siteName,
             logoUrl:      absoluteLogoUrl(row.logoUrl, baseUrl) || DEFAULT_BRANDING.logoUrl,
+            // As stored (often site-relative). Only for in-browser previews, which
+            // resolve it against the page's own host; emails use logoUrl.
+            logoPath:     row.logoUrl || null,
             primaryColor: DEFAULT_BRANDING.primaryColor,
             fromEmail:    DEFAULT_BRANDING.fromEmail,
             fromName:     row.siteName     || DEFAULT_BRANDING.fromName,
