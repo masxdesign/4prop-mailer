@@ -78,6 +78,21 @@ export const DEFAULT_BRANDING = {
 }
 
 /**
+ * Logos uploaded through the admin are stored as site-relative paths
+ * (`/uploads/logos/6/wordmark.png?v=...`). A web page resolves those against its own
+ * host, but an email has no host to resolve against, so mail apps show a broken image.
+ * Prefix the advertiser's site (every advertiser host serves /uploads), and give
+ * protocol-relative URLs https. Absolute URLs pass through unchanged.
+ */
+export function absoluteLogoUrl(logoUrl, baseUrl) {
+    const url = String(logoUrl ?? "").trim()
+    if (!url) return null
+    if (url.startsWith("//")) return `https:${url}`
+    if (url.startsWith("/")) return `${String(baseUrl || "").replace(/\/$/, "")}${url}`
+    return url
+}
+
+/**
  * Fetch branding for a given advertiser ID.
  * Falls back to DEFAULT_BRANDING on missing id or any lookup failure so emails
  * always have something to send with.
@@ -144,7 +159,7 @@ export async function getBranding(poolOrPromise, advertiserId) {
 
         return {
             siteName:     row.siteName     || DEFAULT_BRANDING.siteName,
-            logoUrl:      row.logoUrl      || DEFAULT_BRANDING.logoUrl,
+            logoUrl:      absoluteLogoUrl(row.logoUrl, baseUrl) || DEFAULT_BRANDING.logoUrl,
             primaryColor: DEFAULT_BRANDING.primaryColor,
             fromEmail:    DEFAULT_BRANDING.fromEmail,
             fromName:     row.siteName     || DEFAULT_BRANDING.fromName,
