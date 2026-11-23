@@ -50,7 +50,11 @@ export const header = `<tr>
                         </td>
                     </tr>`
 
-/** Statistics link, greeting and the "update your filters" line. */
+/**
+ * Statistics link, greeting and the editable paragraph. {{> introText}} is the text admins
+ * edit in Admin > Emails (./intro.js, stored in a_magEmailTemplateParts), inlined by
+ * composeEachAlertTemplate; the three breaks after it are the gap above the columns.
+ */
 export const intro = `<p style="text-align: center">
                                 <a href="{{prop_com}}/props/clicks?scope=company&sort=site&days=28">click here to see your Statistics</a>
                             </p>
@@ -58,13 +62,7 @@ export const intro = `<p style="text-align: center">
                                 Dear {{name}}
                             </p>
                             <p>
-                                Agents new Properties & Requirements of your day to day interest.
-                                <br />
-                                <a href="https://www.each.co.uk/?alert{{hash}}*s" target="_blank">
-                                    Not exactly what you want? update Types/Locations/Filters here
-                                </a>
-                                <br />
-                                or call 020 7602 5947.
+                                {{> introText}}
                                 <br />
                                 <br />
                                 <br />

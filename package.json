@@ -19,7 +19,8 @@
   "dependencies": {
     "@4prop/brand-theme": "*",
     "handlebars": "^4.7.8",
-    "lodash": "^4.17.21"
+    "lodash": "^4.17.21",
+    "sanitize-html": "^2.17.5"
   },
   "peerDependencies": {
     "aws-sdk": "^2.0.0",
