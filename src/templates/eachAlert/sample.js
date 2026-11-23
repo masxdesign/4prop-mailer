@@ -9,8 +9,8 @@ const HOST = 'https://www.4prop.com'
 const HASH = '0a1b2c3d'
 const SINCE = '261020'
 
-const propertyHref = (key) => `${HOST}/each-alert/${HASH}/p?since=${SINCE}&scrollkey=${key}&view=Line&marketing=AP1`
-const requirementHref = (rid) => `${HOST}/requirement/${rid}?alert=${HASH}&since=${SINCE}&marketing=AR1`
+const propertyHref = (key) => `${HOST}/each-alert?hash=${HASH}&since=${SINCE}&view=table&scrollkey=${key}`
+const requirementHref = (rid) => `${HOST}/requirements/${rid}?hash=${HASH}&since=${SINCE}`
 
 export const eachAlertSample = {
     prop_com: HOST,

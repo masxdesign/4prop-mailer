@@ -11,6 +11,11 @@
  * Inside {{#each}} the context is the item, so items carry everything they print
  * (their own href); nothing reaches for the outer data with ../
  *
+ * Links go straight to the app's pages (/each-alert?hash=, /requirements?scope=each-alert,
+ * /requirements/<rid>?hash=), not the legacy /each-alert/<hash>/p|r and /requirement/<rid>
+ * addresses 4prop 301s there (Controller\EACHAlertPage). The old marketing=AP0/AP2/AR0
+ * tags went with them: the redirect dropped them anyway.
+ *
  * The markup is today's email (db-sync src/templates/email/awsEmailTemplates/EACHAlert.html,
  * identical to the live SES template "EACHAlert" on 2026-11-23) plus the bits db-sync used
  * to build as HTML strings: the <style> block, one property row and one requirement row.
@@ -135,18 +140,18 @@ export const wrapper = `<!doctype html>
                                     <tr valign="top">
                                         <td style="border-right: 1px dotted #e78500;width: 314px;">
                                             <h3 style="margin-top:0;font-weight: normal;text-align:center;margin-bottom: 0;display:block;width:314px">
-                                                <a href="{{prop_com}}/each-alert/{{hash}}/p?since={{since}}&view=Grid&marketing=AP0" target="_blank">
+                                                <a href="{{prop_com}}/each-alert?hash={{hash}}&since={{since}}&view=grid" target="_blank">
                                                     {{property_count}} new Properties
                                                 </a>
                                             </h3>
                                             <div style="color: #92b0e5;margin-bottom: 24px;text-align:center">in grid view</div>
                                             {{#each properties}}{{> propertyItem}}{{/each}}{{#if properties}}
-            <a href="{{prop_com}}/each-alert/{{hash}}/p?since={{since}}&view=Map&marketing=AP2">or see all {{property_count}} in map view</a>
+            <a href="{{prop_com}}/each-alert?hash={{hash}}&since={{since}}&view=map">or see all {{property_count}} in map view</a>
         {{/if}}
                                         </td>
                                         <td style="width: 314px;">
                                             <h3 style="margin-top:0;margin-left:15px;font-weight: normal;text-align:center;margin-bottom: 0;display:block;width:314px">
-                                                <a href="{{prop_com}}/each-alert/{{hash}}/r?since={{since}}&marketing=AR0" target="_blank">
+                                                <a href="{{prop_com}}/requirements?scope=each-alert&hash={{hash}}&since={{since}}" target="_blank">
                                                     {{requirement_count}} new Requirements
                                                 </a>
                                             </h3>
