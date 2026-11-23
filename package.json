@@ -12,11 +12,13 @@
     "./branding": "./src/branding.js",
     "./templates/verify": "./src/templates/verifyEmail.js",
     "./templates/reset": "./src/templates/resetPassword.js",
+    "./templates/eachAlert": "./src/templates/eachAlert/index.js",
     "./sendVerificationEmail": "./src/sendVerificationEmail.js",
     "./sendPasswordResetEmail": "./src/sendPasswordResetEmail.js"
   },
   "dependencies": {
-    "@4prop/brand-theme": "*"
+    "@4prop/brand-theme": "*",
+    "handlebars": "^4.7.8"
   },
   "peerDependencies": {
     "aws-sdk": "^2.0.0",
