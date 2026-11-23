@@ -5,6 +5,7 @@
  *   composeEachAlertTemplate() → { name, subject, html }  the parts inlined into one
  *                                                           SES template (SES has no partials)
  *   renderEachAlert(data)      → { subject, html }        rendered the way SES renders it
+ *   buildEachAlertData(row, …) → data                     one agent's alert row → template data
  *
  * The parts live in ./parts.js, sample data in ./sample.js.
  */
@@ -13,6 +14,8 @@ import { PARTS, subject } from './parts.js'
 
 export { PARTS } from './parts.js'
 export { eachAlertSample } from './sample.js'
+export { buildEachAlertData, fetchEachAlertTypes, EACH_ALERT_HOST } from './buildData.js'
+export { eachAlertSince, previousWorkingDay, fetchUkBankHolidays } from './since.js'
 
 /** The SES template name db-sync sends through. The old hand-made one stays "EACHAlert". */
 export const EACH_ALERT_TEMPLATE_NAME = 'EACHAlertV2'
