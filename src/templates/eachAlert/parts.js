@@ -91,7 +91,7 @@ export const requirementItem = `
                         </span>
                     </td>
                     <td style="padding-top:7px;padding-left:15px">
-                        {{#if logo}}<img src="{{logo}}" width="50" alt="{{companyName}}" title="{{companyName}}" />{{else}}{{companyName}}{{/if}}
+                        {{#if logo}}<img src="{{logo}}" width="50" alt="{{companyName}}" title="{{companyName}}" />{{else}}<span style="font-size:12px;line-height:1.4em;display:block">{{companyName}}</span>{{/if}}
                     </td>
                 </tr>
             `
