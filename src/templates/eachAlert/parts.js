@@ -13,18 +13,18 @@
  *
  * The markup is today's email (db-sync src/templates/email/awsEmailTemplates/EACHAlert.html,
  * identical to the live SES template "EACHAlert" on 2026-11-23) plus the bits db-sync used
- * to build as HTML strings: the <style> block, the CRM shortcut, one property row and one
- * requirement row.
+ * to build as HTML strings: the <style> block, one property row and one requirement row.
+ * The CRM button three admin agents used to get in the header was removed on 2026-11-23.
  *
  * Data (see ./sample.js):
- *   prop_com, hash, since, nid, name, property_count, requirement_count, isAdmin,
+ *   prop_com, hash, since, nid, name, property_count, requirement_count,
  *   properties:   [{ pc, label, href }]
  *   requirements: [{ href, types, locationHtml, size, logo, companyName }]
  */
 
 export const subject = 'EACH Alert [Daily] from Estate Agents Clearing House est 1984'
 
-/** Top bar: "view in a browser", the EACH logo strip and the admin-only CRM shortcut. */
+/** Top bar: "view in a browser" and the EACH logo strip. */
 export const header = `<tr>
                         <td style="text-align:center;">
                             <a href="{{prop_com}}/each-alert/{{hash}}/p?since={{since}}" style="font-size: 12px;margin-bottom: 8px;" target="_blank">view in a browser</a>
@@ -37,14 +37,6 @@ export const header = `<tr>
                                                 <span style="font-size: 12px;color: white;">Estate Agents Clearing House</span>
                                             </td>
                                             <td style="text-align: right; padding: 0 15px">
-                                                {{#if isAdmin}}
-        <a
-            href="{{prop_com}}/crm"
-            class="shortcut"
-        >
-            CRM
-        </a>
-    {{/if}}
                                             </td>
                                         </tr>
                                     </tbody>
@@ -55,7 +47,7 @@ export const header = `<tr>
 
 /** Statistics link, greeting and the "update your filters" line. */
 export const intro = `<p style="text-align: center">
-                                <a href="{{prop_com}}/report/properties?i={{hash}}">click here to see your Statistics</a>
+                                <a href="{{prop_com}}/props/clicks?scope=company&sort=site&days=28">click here to see your Statistics</a>
                             </p>
                             <p>
                                 Dear {{name}}
@@ -127,15 +119,6 @@ export const wrapper = `<!doctype html>
         <style type="text/css">
             a { text-decoration: none }
             a:hover { text-decoration: underline }
-            .shortcut {
-                display: inline-block;
-                text-decoration: none;
-                border-radius: 8px;
-                font-size: 12px;
-                border: 1px solid #FFF;
-                color: #FFF;
-                padding: 15px 15px
-            }
         </style>
 
     </head>

@@ -20,7 +20,6 @@ export const eachAlertSample = {
     name: 'John',
     property_count: 14,
     requirement_count: 3,
-    isAdmin: false,
     properties: [
         { pc: 'W1', label: 'Mayfair', href: propertyHref('mayfair_1') },
         { pc: 'EC2', label: 'City of London', href: propertyHref('city_of_london_2') },
