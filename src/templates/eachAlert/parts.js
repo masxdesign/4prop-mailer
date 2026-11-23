@@ -27,7 +27,7 @@ export const subject = 'EACH Alert [Daily] from Estate Agents Clearing House est
 /** Top bar: "view in a browser" and the EACH logo strip. */
 export const header = `<tr>
                         <td style="text-align:center;">
-                            <a href="{{prop_com}}/each-alert/{{hash}}/p?since={{since}}" style="font-size: 12px;margin-bottom: 8px;" target="_blank">view in a browser</a>
+                            <a href="{{prop_com}}/each-alert" style="font-size: 12px;margin-bottom: 8px;" target="_blank">view in a browser</a>
                             <div style="line-height:0;background:url({{prop_com}}/new/images/alert-grad-x2.png) repeat-x;width:661px;height:60px;text-align: left;padding:10px">
                                 <table cellpadding="0" width="100%" style="border-collapse: collapse">
                                     <tbody>
