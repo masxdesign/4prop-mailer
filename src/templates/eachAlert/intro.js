@@ -14,7 +14,12 @@
  * open a Handlebars block or reach other data when SES renders it.
  */
 import sanitizeHtml from 'sanitize-html'
-import sql from 'mssql'
+
+// No `import sql from 'mssql'` here, on purpose: this package has no mssql of its own, so it
+// resolved the monorepo root's copy (11) while db-sync's pool is its own (12). Types made by
+// one copy fail in the other ("parameter.type.validate is not a function"), and the 24 Nov
+// 2026 alert went out with the default paragraph. Parameters are passed untyped (the
+// caller's driver infers NVarChar) and cast in SQL where the column needs it.
 
 export const EACH_ALERT_INTRO_KEY = { template: 'each_alert', part: 'intro' }
 
@@ -96,8 +101,8 @@ export async function loadEachAlertIntro(pool) {
     const fallback = { html: EACH_ALERT_INTRO_DEFAULT, isDefault: true, createdBy: null, createdAt: null }
     try {
         const { recordset } = await pool.request()
-            .input('template', sql.VarChar(64), EACH_ALERT_INTRO_KEY.template)
-            .input('part', sql.VarChar(64), EACH_ALERT_INTRO_KEY.part)
+            .input('template', EACH_ALERT_INTRO_KEY.template)
+            .input('part', EACH_ALERT_INTRO_KEY.part)
             .query(`
                 SELECT TOP 1 html, created_by, created_at
                 FROM a_magEmailTemplateParts
@@ -122,13 +127,13 @@ export async function loadEachAlertIntro(pool) {
 export async function saveEachAlertIntro(pool, { html, userId }) {
     const clean = html == null ? null : cleanEachAlertIntro(html)
     await pool.request()
-        .input('template', sql.VarChar(64), EACH_ALERT_INTRO_KEY.template)
-        .input('part', sql.VarChar(64), EACH_ALERT_INTRO_KEY.part)
-        .input('html', sql.NVarChar(sql.MAX), clean)
-        .input('userId', sql.BigInt, userId == null ? null : String(userId))
+        .input('template', EACH_ALERT_INTRO_KEY.template)
+        .input('part', EACH_ALERT_INTRO_KEY.part)
+        .input('html', clean)
+        .input('userId', userId == null ? null : String(userId))
         .query(`
             INSERT INTO a_magEmailTemplateParts (template_key, part, html, created_by)
-            VALUES (@template, @part, @html, @userId)
+            VALUES (@template, @part, @html, CAST(@userId AS BIGINT))
         `)
     return clean
 }
